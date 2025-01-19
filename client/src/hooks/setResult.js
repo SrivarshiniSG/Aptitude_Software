@@ -43,7 +43,7 @@ export const usePublishResult = (resultData) => {
             console.log("Submitting result data:", dataToSubmit);
             
             await postServerData(
-                `${process.env.REACT_APP_SERVER_HOSTNAME}/api/result`, 
+                `/api/result`, 
                 dataToSubmit
             );
         } catch (error) {

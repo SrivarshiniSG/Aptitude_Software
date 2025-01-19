@@ -1,11 +1,8 @@
 {
-<<<<<<< HEAD
-=======
   "dependencies": {
     "dotenv": "^16.4.7",
     "redux-thunk": "^3.1.0"
   },
->>>>>>> 79c63805fea565c9d7735df7ab36a549fe07585c
   "devDependencies": {
     "gh-pages": "^6.2.0"
   }

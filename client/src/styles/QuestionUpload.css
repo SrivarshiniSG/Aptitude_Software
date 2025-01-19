@@ -1,19 +1,18 @@
-.container {
+.qu-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: 50px;
   padding: 20px;
-
+  min-height: 100vh;
 }
 
-.title {
+.qu-title {
   font-size: 2em;
   margin-bottom: 20px;
 }
 
-.question-form {
+.qu-question-form {
   width: 100%;
   max-width: 600px;
   background: #ffffff;
@@ -22,11 +21,11 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.form-group {
+.qu-form-group {
   margin-bottom: 15px;
 }
 
-.select-input {
+.qu-select-input {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
@@ -35,7 +34,7 @@
   font-size: 16px;
 }
 
-.question-input {
+.qu-question-input {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
@@ -45,7 +44,7 @@
   font-size: 16px;
 }
 
-.option-input {
+.qu-option-input {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
@@ -54,7 +53,7 @@
   font-size: 16px;
 }
 
-.submit-btn {
+.qu-submit-btn {
   width: 100%;
   padding: 12px;
   background: #1eb2a6;
@@ -64,26 +63,65 @@
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.submit-btn:hover {
+.qu-submit-btn:hover:not(:disabled) {
   background: #189a90;
 }
 
-.error-message {
-  color: red;
-  margin: 10px 0;
+.qu-submit-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.qu-submit-btn-loading {
+  color: transparent;
+}
+
+.qu-submit-btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin: -10px 0 0 -10px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Also disable form inputs during loading */
+.qu-question-form:has(.qu-submit-btn:disabled) input,
+.qu-question-form:has(.qu-submit-btn:disabled) textarea,
+.qu-question-form:has(.qu-submit-btn:disabled) select {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.qu-error-message {
+  color: #dc3545;
   padding: 10px;
+  margin: 10px 0;
   background: #ffe6e6;
   border-radius: 5px;
   text-align: center;
 }
 
-.success-message {
-  color: green;
-  margin: 10px 0;
+.qu-success-message {
+  color: #28a745;
   padding: 10px;
+  margin: 10px 0;
   background: #e6ffe6;
   border-radius: 5px;
   text-align: center;
@@ -91,11 +129,62 @@
 
 /* Responsive Design */
 @media (max-width: 600px) {
-  .container {
+  .qu-container {
     padding: 10px;
   }
 
-  .question-form {
+  .qu-question-form {
     padding: 15px;
   }
+}
+
+.qu-file-input-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #1eb2a6;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.qu-file-input-label:hover {
+  background: #189a90;
+}
+
+.qu-file-input {
+  display: none;
+}
+
+.qu-image-preview {
+  margin-top: 15px;
+  padding: 15px;
+  border: 2px dashed #ddd;
+  border-radius: 5px;
+}
+
+.qu-image-info {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 5px;
+}
+
+.qu-image-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.qu-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.qu-checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }

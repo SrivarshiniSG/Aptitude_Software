@@ -1,10 +1,11 @@
 import express from 'express';
 import AccessCode from '../models/accessCodeSchema.js';
+import { auth, checkRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Get current access code
-router.get('/current-code', async (req, res) => {
+router.get('/current-code', auth, checkRole(['admin']), async (req, res) => {
     try {
         const currentCode = await AccessCode.findOne({ isActive: true });
         res.json({ code: currentCode?.code || 'No active code' });
@@ -14,7 +15,7 @@ router.get('/current-code', async (req, res) => {
 });
 
 // Update access code
-router.post('/update-code', async (req, res) => {
+router.post('/update-code', auth, checkRole(['admin']), async (req, res) => {
     try {
         const { code } = req.body;
         
@@ -36,7 +37,7 @@ router.post('/update-code', async (req, res) => {
 });
 
 // Initialize default code
-router.post('/init-code', async (req, res) => {
+router.post('/init-code', auth, checkRole(['admin']), async (req, res) => {
     try {
         const existingCode = await AccessCode.findOne({ isActive: true });
         

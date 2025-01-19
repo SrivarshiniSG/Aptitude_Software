@@ -1,42 +1,81 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-// Define the sub-question schema
-const subQuestionSchema = new mongoose.Schema({
+const comprehensionSchema = new Schema({
+  passage: {
+    type: String,
+    required: true
+  },
+  q1: {
     question: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
-    options: {
-        type: [String],
-        required: true,
-        validate: [arr => arr.length === 4, 'Must have exactly 4 options']
-    },
+    options: [{
+      type: String,
+      required: true
+    }],
     correctAnswer: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 3
+      type: Number,
+      required: true
     }
-});
-
-// Define the main comprehension schema
-const comprehensionSchema = new mongoose.Schema({
-    passage: {
-        type: String,
-        required: true
+  },
+  q2: {
+    question: {
+      type: String,
+      required: true
     },
-    subQuestions: {
-        type: [subQuestionSchema],
-        required: true,
-        validate: [arr => arr.length > 0, 'Must have at least one sub-question']
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    options: [{
+      type: String,
+      required: true
+    }],
+    correctAnswer: {
+      type: Number,
+      required: true
     }
-});
+  },
+  q3: {
+    question: {
+      type: String,
+      required: true
+    },
+    options: [{
+      type: String,
+      required: true
+    }],
+    correctAnswer: {
+      type: Number,
+      required: true
+    }
+  },
+  q4: {
+    question: {
+      type: String,
+      required: true
+    },
+    options: [{
+      type: String,
+      required: true
+    }],
+    correctAnswer: {
+      type: Number,
+      required: true
+    }
+  },
+  q5: {
+    question: {
+      type: String,
+      required: true
+    },
+    options: [{
+      type: String,
+      required: true
+    }],
+    correctAnswer: {
+      type: Number,
+      required: true
+    }
+  }
+}, { timestamps: true });
 
-// Create and export the model
-const ComprehensionQuestion = mongoose.model('ComprehensionQuestion', comprehensionSchema);
-
-export default ComprehensionQuestion;
+export default mongoose.model('Comprehension', comprehensionSchema);

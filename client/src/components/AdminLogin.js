@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/AdminLogin.css';
+import api from '../axios/axios';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -8,25 +9,31 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleAdminLogin = (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
-    
-    if (username === 'admin' && password === 'admin123') {
-      // Admin dashboard
-      navigate('/admin-dashboard');
-    } else if (username === 'ques' && password === 'ques123') {
-      // Question uploader dashboard
-      navigate('/question-upload');
-    } else {
-      setError('Invalid username or password');
+    try {
+      const { data } = await api.post('api/auth/admin-login', { username, password });
+      
+      // Store the token
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('role', data.role);
+      
+      // Navigate based on role
+      if (data.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (data.role === 'question_uploader') {
+        navigate('/question-upload');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed');
     }
   };
 
   return (
-    <div className='container'>
+    <div className='admin-login-container'>
       <h1 className='title text-light'>Admin Login</h1>
       <div className="form-container">
-        <form id="admin-form" onSubmit={handleAdminLogin}>
+        <form className="admin-form" onSubmit={handleAdminLogin}>
           <div className="input-group">
             <label htmlFor="username" className="label">Username</label>
             <input 
@@ -53,10 +60,10 @@ export default function AdminLogin() {
             />
           </div>
 
-          {error && <div className="error-message">{error}</div>}
+          {error && <div className="admin-error-message">{error}</div>}
 
-          <div className='start'>
-            <button type="submit" className='btn'>Login</button>
+          <div className='admin-start'>
+            <button type="submit" className='admin-btn'>Login</button>
           </div>
         </form>
       </div>

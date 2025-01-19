@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { startExamAction, moveNextAction, movePrevAction, setTraceAction } from '../redux/question_reducer'
-import axios from 'axios'
+import { startExamAction, moveNextAction, movePrevAction } from '../redux/question_reducer'
+import api from '../axios/axios'
 
 /** fetch question hook to fetch api data and set value to store */
 export const useFetchQestion = () => {
@@ -19,34 +19,46 @@ export const useFetchQestion = () => {
 
         (async () => {
             try {
-                console.log("Fetching questions for department:", departmentId);
+                const { data } = await api.get(`/api/questions/${departmentId}`);
                 
-                const { data } = await axios.get(`http://localhost:5000/api/questions/${departmentId}`);
-                console.log("Received questions data:", data);
-
-                if(data && data[0]?.questions?.length > 0){
-                    setGetData(prev => ({...prev, isLoading: false}));
-                    setGetData(prev => ({...prev, apiData: data[0].questions}));
-
-                    // First dispatch to reset trace
-                    dispatch(setTraceAction(0));
+                if (data && data[0]?.questions) {
+                    const { questions, answers } = data[0];
                     
-                    // Then dispatch start exam action
-                    dispatch(startExamAction({
-                        question: data[0].questions,
-                        answers: data[0].answers
-                    }));
+                    // Combine all questions in the correct order
+                    const allQuestions = [
+                        ...questions.aptitude.map(q => ({ ...q, category: 'aptitude' })),
+                        ...questions.core.map(q => ({ ...q, category: 'core' })),
+                        ...questions.verbal.map(q => ({ ...q, category: 'verbal' })),
+                        ...questions.programming.map(q => ({ ...q, category: 'programming' }))
+                    ];
+
+                    // Combine all answers in the same order
+                    const allAnswers = [
+                        ...answers.aptitude,
+                        ...answers.core,
+                        ...answers.verbal,
+                        ...answers.programming
+                    ];
+
+                    setGetData({
+                        isLoading: false,
+                        apiData: allQuestions,
+                        serverError: null
+                    });
+
+                    // Dispatch to store
+                    dispatch(startExamAction({ question: allQuestions, answers: allAnswers }));
 
                 } else {
                     throw new Error("No Questions Available");
                 }
             } catch (error) {
                 console.error("Error fetching questions:", error);
-                setGetData(prev => ({
-                    ...prev, 
-                    isLoading: false, 
-                    serverError: error.message || "Error while fetching questions"
-                }));
+                setGetData({
+                    isLoading: false,
+                    apiData: null,
+                    serverError: error.message
+                });
             }
         })();
     }, [dispatch, departmentId]);
@@ -57,17 +69,17 @@ export const useFetchQestion = () => {
 /** MoveAction Dispatch function */
 export const MoveNextQuestion = () => async (dispatch) => {
     try {
-        dispatch(moveNextAction())
+        dispatch(moveNextAction());
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 
 /** PrevAction Dispatch function */
 export const MovePrevQuestion = () => async (dispatch) => {
     try {
-        dispatch(movePrevAction())
+        dispatch(movePrevAction());
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }

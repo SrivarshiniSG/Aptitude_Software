@@ -1,11 +1,13 @@
 import express from 'express';
 import Feedback from '../models/feedbackSchema.js';
+import { auth, checkRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/',auth, checkRole(['student']), async (req, res) => {
     try {
-        const { username, email, ratings, comments } = req.body;
+        const { ratings, comments } = req.body;
+        const { username, email } = req.user;
 
         // Create new feedback
         const newFeedback = new Feedback({

@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ResultTable from './ResultTable';
 import { useDispatch, useSelector } from 'react-redux';
 import { postServerData } from '../helper/helper';
-import axios from 'axios';
+import api from '../axios/axios';
 
 import { resetAllAction } from '../redux/question_reducer';
 import { resetResultAction } from '../redux/result_reducer';
@@ -48,12 +48,12 @@ export default function Result() {
 
                     // Store result first
                     const response = await postServerData(
-                        `${process.env.REACT_APP_SERVER_HOSTNAME}/api/result`, 
+                        `/api/result`, 
                         resultData
                     );
 
                     // Clear active session after result is stored
-                    await axios.post('http://localhost:5000/api/users/clear-session', {
+                    await api.post('/api/users/clear-session', {
                         email,
                         regNo
                     });

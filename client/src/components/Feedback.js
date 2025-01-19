@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
-import { postServerData } from '../helper/helper'
-import axios from 'axios'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import api from '../axios/axios'
 
 const StarRating = ({ rating, setRating, question }) => {
     return (
@@ -26,12 +25,16 @@ const StarRating = ({ rating, setRating, question }) => {
 
 export default function Feedback() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const { 
-        questions: { queue, answers },
         result: { result, username, email, regNo, department, departmentId }
     } = useSelector(state => state);
+
+    useEffect(() => {
+        sessionStorage.setItem('testTaken', true);
+    }, []);
 
     const [feedbackData, setFeedbackData] = useState({
         q1: 0,
@@ -46,73 +49,11 @@ export default function Feedback() {
         q3: "How would you rate your overall experience?"
     };
 
-    const storeResult = async () => {
-        try {
-            // Calculate points
-            let correctCount = 0;
-            let attemptedCount = 0;
-
-            // Log the complete state for debugging
-            console.log("Complete state:", {
-                answers,
-                userAnswers: result,
-                queue: queue.length
-            });
-
-            // Compare answers
-            result.forEach((userAnswer, index) => {
-                if (userAnswer !== undefined) {
-                    attemptedCount++;
-                    const isCorrect = Number(userAnswer) === Number(answers[index]);
-                    
-                    console.log(`Question ${index + 1}:`, {
-                        userAnswer,
-                        correctAnswer: answers[index],
-                        isCorrect
-                    });
-
-                    if (isCorrect) {
-                        correctCount++;
-                    }
-                }
-            });
-
-            console.log("Final calculation:", {
-                attemptedQuestions: attemptedCount,
-                correctAnswers: correctCount,
-                totalQuestions: queue.length
-            });
-
-            const resultData = {
-                username,
-                email,
-                regNo,
-                department,
-                departmentId,
-                result,
-                attempts: attemptedCount,
-                points: correctCount,
-                totalQuestions: queue.length
-            };
-
-            console.log("Submitting result with regNo:", resultData);
-
-            const response = await postServerData(
-                `${process.env.REACT_APP_SERVER_HOSTNAME}/api/result`,
-                resultData
-            );
-            
-            console.log("Server response:", response);
-            return response;
-        } catch (error) {
-            console.error("Error storing result:", error);
-            throw error;
-        }
-    };
+    const terminationType = searchParams.get('t');
+    const { title, message } = getTerminationMessage(terminationType);
 
     const handleFeedbackSubmit = async () => {
         try {
-            // Validation checks
             if (feedbackData.q1 === 0 || feedbackData.q2 === 0 || feedbackData.q3 === 0) {
                 setError('Please rate all questions');
                 return;
@@ -123,12 +64,9 @@ export default function Feedback() {
                 return;
             }
 
-            // Submit feedback
-            await axios.post('http://localhost:5000/api/feedback', {
-                username,
-                email,
-                regNo,
-                department,
+            setIsLoading(true);
+
+            await api.post('/api/feedback', {
                 ratings: {
                     q1: feedbackData.q1,
                     q2: feedbackData.q2,
@@ -137,77 +75,14 @@ export default function Feedback() {
                 comments: feedbackData.comments.trim()
             });
 
-            // Remove event listeners before navigation
-            window.removeEventListener('beforeunload', () => {});
-            window.removeEventListener('popstate', () => {});
-
-            // Navigate to login page after successful submission
-            navigate('/', { replace: true });
+            navigate('/success', { replace: true });
 
         } catch (error) {
-            console.error('Feedback submission error:', error);
             setError(error.response?.data?.message || 'Error submitting feedback');
+        } finally {
+            setIsLoading(false);
         }
     };
-
-    useEffect(() => {
-        // Store result first
-        const initializePage = async () => {
-            setIsLoading(true);
-            try {
-                if (result?.length && username && email) {
-                    await storeResult();
-                }
-                
-                // Check navigation only after storing result
-                const response = await axios.get(`http://localhost:5000/api/users/check-test-status`, {
-                    params: { email, regNo }
-                });
-
-                if (!response.data.hasCompletedTest) {
-                    navigate('/', { replace: true });
-                }
-            } catch (error) {
-                console.error('Initialization error:', error);
-                // Don't navigate away immediately on error
-                setError('There was an error loading your feedback page. Please try refreshing.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        initializePage();
-    }, []);
-
-    useEffect(() => {
-        // Prevent leaving the page without submitting feedback
-        const preventLeaving = (e) => {
-            const message = "You haven't submitted your feedback yet. Your responses are important to us. Are you sure you want to leave?";
-            e.preventDefault();
-            e.returnValue = message;
-            return message;
-        };
-
-        const preventBackNavigation = (e) => {
-            e.preventDefault();
-            alert("Please complete and submit your feedback before leaving. If you need to exit, use the submit button.");
-            // Push a new entry to prevent leaving the feedback page
-            window.history.pushState(null, null, window.location.pathname);
-        };
-
-        // Handle both browser back button and page refresh/close
-        window.addEventListener('beforeunload', preventLeaving);
-        
-        // Handle browser back button specifically
-        window.history.pushState(null, null, window.location.pathname);
-        window.addEventListener('popstate', preventBackNavigation);
-
-        // Cleanup function
-        return () => {
-            window.removeEventListener('beforeunload', preventLeaving);
-            window.removeEventListener('popstate', preventBackNavigation);
-        };
-    }, [navigate, email, regNo]);
 
     if (isLoading) {
         return <div className='container'>
@@ -217,7 +92,14 @@ export default function Feedback() {
 
     return (
         <div className='container'>
-            <h2 className='title text-light'>Quiz Completed!</h2>
+            <h2 className='title text-light'>Test Completed</h2>
+            <p className='text-light' style={{ 
+                marginBottom: '2rem',
+                textAlign: 'center',
+                fontSize: '1.1rem',
+                color: 'black',
+                fontWeight: 'bold'
+            }}>{message}</p>
             
             <div className="feedback-section">
                 {error && <div className="error-msg">{error}</div>}
@@ -238,16 +120,49 @@ export default function Feedback() {
                         onChange={(e) => setFeedbackData({...feedbackData, comments: e.target.value})}
                         required
                         className="feedback-textarea"
+                        style={{ width: '500px' }}
                     />
                 </div>
 
-                <button 
-                    onClick={handleFeedbackSubmit}
-                    className="btn"
-                >
-                    Submit Feedback & Finish
-                </button>
+                <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    marginTop: '1rem' 
+                }}>
+                    <button 
+                        onClick={handleFeedbackSubmit}
+                        className="btn"
+                        style={{ width: '500px' }}
+                    >
+                        Submit Feedback & Finish
+                    </button>
+                </div>
             </div>
         </div>
     );
+}
+
+function getTerminationMessage(terminationType) {
+    switch(terminationType) {
+        case 'tabswitch':
+            return {
+                title: 'Test Terminated',
+                message: 'Your test has been terminated due to switching tabs twice. This is considered a violation of test rules.'
+            };
+        case 'timeout':
+            return {
+                title: 'Time\'s Up!',
+                message: 'Your test has been submitted as the allocated time has ended.'
+            };
+        case 'completed':
+            return {
+                title: 'Test Completed!',
+                message: 'You have successfully completed your test.'
+            };
+        default:
+            return {
+                title: 'Test Submitted',
+                message: 'Your test has been submitted.'
+            };
+    }
 }

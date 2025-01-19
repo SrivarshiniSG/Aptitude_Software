@@ -6,7 +6,7 @@ export default function ResultTable() {
     const [data, setData] = useState([])
 
     useEffect(() => {
-        getServerData(`${process.env.REACT_APP_SERVER_HOSTNAME}/api/result`, (res) => {
+        getServerData(`/api/result`, (res) => {
             const sortedData = res.sort((a, b) => 
                 new Date(b.createdAt) - new Date(a.createdAt)
             );

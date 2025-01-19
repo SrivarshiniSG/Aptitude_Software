@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import axios from 'axios'
+import api from '../axios/axios'
 
 /** check user auth  */
 export function CheckUserExist({ children }){
@@ -15,7 +15,7 @@ export function CheckUserExist({ children }){
 /** get server data */
 export async function getServerData(url) {
     try {
-        const response = await axios.get(url);
+        const response = await api.get(url);
         return response.data;
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -26,7 +26,7 @@ export async function getServerData(url) {
 /** post server data */
 export const postServerData = async (url, result) => {
     try {
-        const response = await axios.post(url, result);
+        const response = await api.post(url, result);
         return response.data;
     } catch (error) {
         console.error("Error in postServerData:", error);

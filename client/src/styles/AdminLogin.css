@@ -1,14 +1,85 @@
+.admin-login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+  padding: 20px;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
 .admin-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
 }
 
-.error-message {
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 16px;
+  color: #333;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #1eb2a6;
+}
+
+.admin-error-message {
   color: red;
   font-size: 14px;
   margin-top: 5px;
+}
+
+.admin-start {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.admin-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #1eb2a6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.admin-btn:hover {
+  background-color: #189a90;
+}
+
+.title {
+  color: #1eb2a6;
+  font-size: 3.5em;
+  margin-bottom: 30px;
 }

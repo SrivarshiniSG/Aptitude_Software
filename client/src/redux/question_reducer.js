@@ -3,21 +3,18 @@ export const questionReducer = (state = {
     answers: [],
     trace: 0,
     categories: {
-        aptitude: { start: 0, end: 9 },
+        aptitude: { start: 0, end: 9},
         core: { start: 10, end: 29 },
         verbal: { start: 30, end: 39 },
         programming: { start: 40, end: 49 }
-    },
-    userAnswers: []
+    }
 }, action) => {
     switch (action.type) {
         case 'START_EXAM':
             return {
                 ...state,
                 queue: action.payload.question,
-                answers: action.payload.answers,
-                trace: 0,
-                userAnswers: new Array(action.payload.question.length).fill(undefined)
+                answers: action.payload.answers
             }
         case 'MOVE_NEXT':
             return {
@@ -34,48 +31,42 @@ export const questionReducer = (state = {
                 ...state,
                 trace: action.payload
             }
-        case 'SAVE_ANSWER':
-            const newUserAnswers = [...state.userAnswers];
-            newUserAnswers[action.payload.index] = action.payload.answer;
-            return {
-                ...state,
-                userAnswers: newUserAnswers
-            }
         case 'RESET_ALL':
             return {
                 queue: [],
                 answers: [],
                 trace: 0,
-                userAnswers: []
+                categories: {
+                    aptitude: { start: 0, end: 9},
+                    core: { start: 10, end: 29 },
+                    verbal: { start: 30, end: 39 },
+                    programming: { start: 40, end: 49 }
+                }
             }
         default:
             return state;
     }
 }
 
+/** redux actions */
 export const startExamAction = (payload) => ({
     type: 'START_EXAM',
     payload
-});
+})
 
 export const moveNextAction = () => ({
     type: 'MOVE_NEXT'
-});
+})
 
 export const movePrevAction = () => ({
     type: 'MOVE_PREV'
-});
-
-export const resetAllAction = () => ({
-    type: 'RESET_ALL'
-});
-
-export const saveAnswerAction = (index, answer) => ({
-    type: 'SAVE_ANSWER',
-    payload: { index, answer }
-});
+})
 
 export const setTraceAction = (payload) => ({
     type: 'SET_TRACE',
     payload
-});
+})
+
+export const resetAllAction = () => ({
+    type: 'RESET_ALL'
+})
