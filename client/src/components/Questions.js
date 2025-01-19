@@ -40,9 +40,30 @@ export default function Questions( { onChecked } ) {
 
     if (!questions) return <h3 className='text-light'>No questions available</h3>
 
+    const currentQuestion = useSelector(state => state.questions.queue[state.questions.trace]);
+    console.log('Current Question:', currentQuestion);
+
   return (
     <div className='questions'>
-      <h2 className='text-light'>{questions.question}</h2>
+      <h2 className='text-light'>
+        {questions.question.includes('\n\n') ? (
+          <>
+            <div className="passage" style={{
+              marginBottom: '20px',
+              padding: '15px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '5px'
+            }}>
+              {questions.question.split('\n\n')[0]}
+            </div>
+            <div className="sub-question">
+              {questions.question.split('\n\n')[1]}
+            </div>
+          </>
+        ) : (
+          questions.question
+        )}
+      </h2>
 
       <ul key={questions.id}>
         {

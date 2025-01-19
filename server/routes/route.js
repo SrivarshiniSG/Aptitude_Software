@@ -2,6 +2,7 @@ import { Router } from "express";
 import Result from '../models/resultSchema.js';
 import mongoose from 'mongoose';
 import ActiveSession from '../models/activeSession.js';
+import { ComprehensionQuestion } from '../models/comprehensionSchema.js';
 const router = Router();
 
 // Define models for existing collections
@@ -83,51 +84,59 @@ router.get('/questions/:deptId', async (req, res) => {
         const { deptId } = req.params;
         console.log("Fetching questions for department:", deptId);
         
-        // Get random questions with updated counts
+        // Fetch questions by category
         const aptitudeQuestions = await AptitudeQuestion.aggregate([
-            { $sample: { size: 15 } }  // 15 aptitude questions
+            { $sample: { size: 10 } },
+            { $addFields: { category: 'aptitude' } }
         ]);
 
         const coreQuestions = await CoreQuestion.aggregate([
-            { 
-                $match: { category: deptId }
-            },
-            { $sample: { size: 15 } }  // 15 core questions
+            { $match: { category: deptId } },
+            { $sample: { size: 20 } },
+            { $addFields: { category: 'core' } }
         ]);
 
+        // Get one random comprehension question
+        const comprehensionQuestion = await ComprehensionQuestion.aggregate([
+            { $sample: { size: 1 } }
+        ]);
+
+        // Transform comprehension question into 5 separate questions
+        const comprehensionQuestions = comprehensionQuestion[0]?.subQuestions.map(sq => ({
+            category: 'verbal',
+            question: `${comprehensionQuestion[0].passage}\n\n${sq.question}`,
+            options: sq.options,
+            correctAnswer: sq.correctAnswer
+        })) || [];
+
+        // Get remaining verbal questions
         const verbalQuestions = await VerbalQuestion.aggregate([
-            { $sample: { size: 10 } }  // 10 verbal questions
+            { $sample: { size: 5 } },
+            { $addFields: { category: 'verbal' } }
         ]);
 
         const programmingQuestions = await ProgrammingQuestion.aggregate([
-            { $sample: { size: 10 } }  // 10 programming questions
+            { $sample: { size: 10 } },
+            { $addFields: { category: 'programming' } }
         ]);
 
-        console.log("Questions fetched:", {
-            aptitude: aptitudeQuestions.length,
-            core: coreQuestions.length,
-            verbal: verbalQuestions.length,
-            programming: programmingQuestions.length
-        });
-
         // Combine all questions
-        let allQuestions = [
-            ...aptitudeQuestions.map(q => ({ ...q, category: 'aptitude' })),
-            ...coreQuestions.map(q => ({ ...q, category: 'core' })),
-            ...verbalQuestions.map(q => ({ ...q, category: 'verbal' })),
-            ...programmingQuestions.map(q => ({ ...q, category: 'programming' }))
-        ];
+        const questions = {
+            aptitude: aptitudeQuestions,
+            core: coreQuestions,
+            verbal: [...comprehensionQuestions, ...verbalQuestions],
+            programming: programmingQuestions
+        };
 
-        // Shuffle the combined array
-        allQuestions = allQuestions.sort(() => Math.random() - 0.5);
+        // Create answer arrays
+        const answers = {
+            aptitude: aptitudeQuestions.map(q => q.correctAnswer),
+            core: coreQuestions.map(q => q.correctAnswer),
+            verbal: [...comprehensionQuestions.map(q => q.correctAnswer), ...verbalQuestions.map(q => q.correctAnswer)],
+            programming: programmingQuestions.map(q => q.correctAnswer)
+        };
 
-        // Create answers array
-        const answers = allQuestions.map(q => q.correctAnswer);
-
-        res.json([{
-            questions: allQuestions,
-            answers: answers
-        }]);
+        res.json([{ questions, answers }]);
 
     } catch (error) {
         console.error('Error fetching questions:', error);

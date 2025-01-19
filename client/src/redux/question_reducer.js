@@ -2,6 +2,12 @@ export const questionReducer = (state = {
     queue: [],
     answers: [],
     trace: 0,
+    categories: {
+        aptitude: { start: 0, end: 9 },
+        core: { start: 10, end: 29 },
+        verbal: { start: 30, end: 39 },
+        programming: { start: 40, end: 49 }
+    },
     userAnswers: []
 }, action) => {
     switch (action.type) {
